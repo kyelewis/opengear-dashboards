@@ -7,11 +7,7 @@ function generateLabel(name) {
 }
 
 function generateMultiviewerTab() {
-  ogscript.debug("Generating Multiviewer Tab");
-  ogscript.setXML(
-    "e2-multiviewer-tab",
-    generateLabel("Loading Multivewer Layouts")
-  );
+  ogscript.setXML("e2-tab-1", generateLabel("Loading Multivewer Layouts"));
 
   const layouts = [
     {
@@ -43,25 +39,23 @@ function generateMultiviewerTab() {
     content +=
       '<button name="' +
       layouts[i].Name +
-      '" width="100" fill="both" buttontype="push">;';
+      '" width="100" fill="both" buttontype="push">';
+    content += "<task>";
     content +=
-      '<task>const ip =  params.getValue("e2.ip", 0); E2(ip).recallMultiviewLayout(' +
+      'const ip =  params.getValue("e2.ip", 0); E2(ip).recallMultiviewLayout(' +
       layouts[i].id +
-      ");></task>";
+      ");";
+    content += "</task>";
     content += "</button>";
   }
 
   content += "</simplegrid>";
 
-  ogscript.debug(content);
-  ogscript.setXML("e2-multiviewer-tab", content);
-  ogscript.debug("Finished generating Multiviewer Tab");
+  ogscript.setXML("e2-tab-1", content);
 }
 
 function generatePresetsTab() {
-  ogscript.debug("Generating Presets Tab");
-
-  ogscript.setXML("e2-presets-tab", generateLabel("Loading Presets"));
+  ogscript.setXML("e2-tab-2", generateLabel("Loading Presets"));
   function callback(presets) {
     const rows = Math.ceil(presets.length / 2);
 
@@ -75,16 +69,17 @@ function generatePresetsTab() {
         '<button  name="' +
         presets[i].Name +
         '" width="100" fill="both" buttontype="push">';
+      content += "<task>";
       content +=
-        '<task>const ip =  params.getValue("e2.ip", 0); E2(ip).recallPreset(' +
+        'const ip =  params.getValue("e2.ip", 0); E2(ip).recallPreset(' +
         presets[i].id +
-        ")</task>";
+        ");";
+      content += "</task>";
       content += "</button>";
     }
 
     content += "</simplegrid>";
-    ogscript.setXML("e2-presets-tab", content);
-    ogscript.debug("Finished generating Presets Tab");
+    ogscript.setXML("e2-tab-2", content);
   }
 
   const ip = params.getValue("e2.ip", 0);

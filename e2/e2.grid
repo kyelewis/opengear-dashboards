@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<abs contexttype="opengear" id="_top" keepalive="false">
+
+    <table top="10" left="10" right="10" bottom="0" fill="both" touch="true">
+        <tr>
+            <meta>
+                <lookup id="size">
+                    <entry key="tab-height">75</entry>
+                    <entry key="tab-width">150</entry>
+                    <entry key="field-height">50</entry>
+                </lookup>
+                <api src="e2.grid.js"/>
+                <api src="e2-views.grid.js" />
+                <constraint id="menuList" constrainttype="INT_CHOICE">
+                    <constraint key="0">Setup</constraint>
+                    <constraint key="1">Multiviewer</constraint>
+                    <constraint key="2">Presets</constraint>
+                    <constraint key="3">About</constraint>
+                </constraint>
+
+                <params>
+                    <param access="1" name="E2IpAddress" oid="e2.ip" type="STRING" value="10.45.1.105" widget="text"/>
+                    <param access="1" value="0" constraint="menuList" constrainttype="ID_REFERENCE" name="Menu" oid="e2.menu" precision="0" type="INT32" widget="22"/>
+                </params>
+
+                <ogscript handles="onchange,onload" oid="e2.menu"><![CDATA[
+                    menuIndex = params.getValue("e2.menu", 0);
+                    ogscript.reveal('e2-tab-' + menuIndex);
+                    switch (menuIndex) {
+                        case 1:
+                            generateMultiviewerTab();
+                            break;
+                        case 2:
+                            generatePresetsTab();
+                            break;
+                    }
+                ]]></ogscript>
+
+                <ogscript handles="oncontextmenu" targetid="menu-selector"><![CDATA[
+                    return {
+                        "Reload": function () {
+                            generateMultiviewerTab();
+                            generatePresetsTab();
+                        }
+                    };
+                ]]></ogscript>
+
+            </meta>
+        </tr>
+
+        <tr>
+            <tab tabposition="none" fill="both" weighty="1.0" weightx="1.0" id="tabs" bottom="10" left="10" right="10" top="10">
+
+                <!-- E2 Setup Tab -->
+                <abs id="e2-tab-0" >
+                    <simplegrid rows="2" fill="horizontal" top="0" left="0" right="0" bottom="0">
+                        <!-- E2 IP Address/Host -->
+                        <abs fill="horizontal">
+                            <label height="%const['size']['field-height']%" left="10" top="10" width="200" name="E2 IP:" style="txt-align:west;"/>
+                            <param height="%const['size']['field-height']%" left="210" top="10" right="10" expand="true"  oid="e2.ip" />
+                        </abs>
+                    </simplegrid>
+
+                </abs>
+
+                <!-- E2 Multiviewer Tab -->
+                <abs id="e2-tab-1" ></abs>
+
+                <!-- E2 Presets Tab -->
+                <abs id="e2-tab-2" ></abs>
+
+                <!-- E2 About Tab -->
+                <abs id="e2-tab-3">
+                    <label top="10" left="10" bottom="10" right="10" style="txt-align:center" name="Kye Lewis - kye.lewis@woohah.com.au"/>
+                </abs>
+            </tab>
+
+        </tr>
+        <tr height="100">
+            <table fill="horizontal">
+                <tr>
+                    <param id="menu-selector" expand="true" width="%const['size']['tab-width']%" height="%const['size']['tab-height']%" oid="e2.menu"/>
+                    <blank fill="horizontal" weightx="1.0"/>
+                </tr>
+            </table>
+        </tr>
+   </table>
+</abs>
