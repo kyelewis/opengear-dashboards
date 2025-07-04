@@ -1,4 +1,3 @@
-/* Formatter - dashboard does not support trailing commas in function arg lists */
 function E2(ip) {
   return {
     recallMultiviewLayout(number) {
@@ -9,20 +8,18 @@ function E2(ip) {
         "&lt;/LayoutSelect&gt;&lt;/MultiViewer&gt;&lt;/Frame&gt;&lt;/FrameCollection&gt;&lt;/System&gt;\r\n";
       rosstalk.sendMessage(ip, 9876, message);
     },
-    getPresets() {
+    getPresets(callback) {
+      function httpCallback(response) {
+        const result = JSON.parse(response);
+        callback(result.result.response);
+      }
+
+      // @todo handle timeout/error feedback
       ogscript.debug("Getting E2 Presets...");
       url = "http://" + ip + ":9999/";
       data =
         '{"method": "listPresets", "params": { "ScreenDest": -1}, "id": "1234", "jsonrpc": "2.0"}';
-      const response = ogscript.http(
-        url,
-        "POST",
-        "application/json",
-        data,
-        false
-      );
-      const result = JSON.parse(response);
-      return result.result.response;
+      ogscript.asyncHTTP(url, "POST", "application/json", data, httpCallback);
     },
     recallPreset(number) {
       ogscript.debug("Recalling E2 Preset...");
@@ -31,6 +28,6 @@ function E2(ip) {
         number +
         "&lt;/RecallPresetToPgmTrans&gt;&lt;/PresetMgr&gt;&lt;/System&gt;";
       rosstalk.sendMessage(ip, 9876, message);
-    },
+    }
   };
 }

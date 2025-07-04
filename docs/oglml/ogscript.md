@@ -92,3 +92,18 @@ xml
 
 ## ogscript.runXPath
 xpath, xml
+
+# params functions
+
+## getParam - Get a parameter value
+oid, index
+
+## params.setValue - Set a parameter value
+oid, index, value
+
+# rosstalk functions
+
+## TCP
+
+### rosstalk.sendMessage - Send a TCP message
+host, port, command, callback

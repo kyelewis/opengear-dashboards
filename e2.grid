@@ -1,101 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?><abs contexttype="opengear" id="_top" keepalive="false">
-   <meta>
+    <meta>
       <params>
          <param access="1" maxlength="0" name="E2IpAddress" oid="e2.ip" type="STRING" value="10.45.1.105" widget="text"/>
       </params>
-      <api id="e2-api" immediate="true" name="E2 API" src="e2.grid.js"/>
-   </meta>
-   <tab bottom="50" id="tabs" left="50" right="50" style="size:Bigger;" tabposition="south" top="50">
-   <meta>
-      <ogscript handles="oncontextmenu" targetid="tabs">ogscript.debug(this);
+      <api immediate="true" src="e2.grid.js"/>
+      <api immediate="true"  src="e2-views.grid.js" />
+    </meta>
 
-return { "Reload Preset Grid": function() {
-ogscript.reload('e2-presets-grid');
-} }</ogscript>
-      <ogscript handles="onchange" targetid="tabs">switch(this.getSelectedIndex()) {
-      case 2: {
-ogscript.debug("Changed to E2 Presets Tab, reloading presets grid");
-ogscript.reload('e2-presets-grid');
-break;
-      }
-      case 1: {
-ogscript.debug("Changed to MV Tab, reloading MV Presets");
-ogscript.reload('e2-multiview-layouts-grid');
-break;
-      }
+    <tab id="tabs" bottom="10" left="10" right="10" top="10">
 
-}</ogscript>
-   </meta>
-      <abs id="e2-setup" name="E2 Setup">
-         <param expand="true" height="114" left="177" oid="e2.ip" top="65" width="308"/>
-         <label height="54" left="37" name="E2 IP:" style="txt-align:west" top="98" width="188"/>
-      </abs>
-      <abs id="e2-mv-abs" name="MV">
+        <meta>
+            <ogscript handles="oncontextmenu" targetid="tabs">
+                return {
+                    "Reload": function () {
+                        generateMultiviewerTab();
+                        generatePresetsTab();
+                    }
+                };
+            </ogscript>
 
-      <simplegrid bottom="20" fill="both" id="e2-multiview-layouts-grid" left="20" right="20" top="20" weighty="1.0">
-         <api contentfunction="generateMvGrid">function generateMvGrid() {
-ogscript.debug("Re-generating MV Grid");
-
-const ip = params.getValue('e2.ip', 0);
-const layouts = [ {
-    Name: "Layout 1",
-    id: 0,
-    },
-    {
-        Name: "Layout 2",
-        id: 1,
-        },
-        {
-            Name: "Layout 3",
-            id: 2,
-            },
-            {
-                Name: "Layout 4",
-                id: 3,
+            <ogscript handles="onchange" targetid="tabs">
+                switch (this.getSelectedIndex()) {
+                    case 1: {
+                        generateMultiviewerTab();
+                        break;
+                    }
+                    case 2: {
+                        generatePresetsTab();
+                        break;
+                    }
                 }
-                ];
+            </ogscript>
+        </meta>
 
-const rows = Math.ceil(layouts.length / 2);
+        <!-- E2 Setup Tab -->
+        <abs id="e2-setup-tab" name="E2 Setup">
+            <label height="100" left="10" top="10" width="200" name="E2 IP:" style="txt-align:west;"/>
+            <param height="100" left="210" top="10" width="300" expand="true"  oid="e2.ip" />
+        </abs>
 
-var content = '&lt;simplegrid bottom="20" id="e2-multiview-layouts-grid" rows="' + rows + '" fill="both" left="20" right="20" top="20"&gt;';
+        <!-- E2 Multiviewer Tab -->
+        <abs id="e2-multiviewer-tab" name="MV"></abs>
 
-for(var i=0; i&lt;layouts.length; i++) {
-content += '&lt;button width="100" fill="both" buttontype="push" name="' + layouts[i].Name + '"&gt;';
-content += '&lt;task&gt;const ip =  params.getValue("e2.ip", 0); E2(ip).recallMultiviewLayout(' + layouts[i].id + ');&lt;/task&gt;';
-content += '&lt;/button&gt;';
-}
+        <!-- E2 Presets Tab -->
+        <abs id="e2-presets-tab" name="Presets"></abs>
 
-content += '&lt;/simplegrid&gt;';
-return content;
-
-}</api>
-</simplegrid>
-
-
-      </abs>
-      <abs id="e2-presets-abs" name="Presets">
-
-         <simplegrid bottom="20" fill="both" id="e2-presets-grid" left="20" right="20" top="20" weighty="1.0">
-            <api contentfunction="generatePresetGrid">function generatePresetGrid() {
-ogscript.debug("Re-generating Presets Grid");
-
-const ip = params.getValue('e2.ip', 0);
-const presets = E2(ip).getPresets();
-const rows = Math.ceil(presets.length / 2);
-
-var content = '&lt;simplegrid bottom="20" id="e2-presets-grid" rows="' + rows + '" fill="both" left="20" right="20" top="20"&gt;';
-
-for(var i=0; i&lt;presets.length; i++) {
-   content += '&lt;button width="100" fill="both" buttontype="push" name="' + presets[i].Name + '"&gt;';
-   content += '&lt;task&gt;const ip =  params.getValue("e2.ip", 0); E2(ip).recallPreset(' + presets[i].id + ');&lt;/task&gt;';
-   content += '&lt;/button&gt;';
-}
-
-content += '&lt;/simplegrid&gt;';
-return content;
-
-}</api>
-         </simplegrid>
-      </abs>
+        <!-- E2 About Tab -->
+        <abs id="e2-about-tab" name="About">
+            <label top="10" left="10" bottom="10" right="10" style="txt-align:center" name="Kye Lewis - kye.lewis@woohah.com.au"/>
+        </abs>
    </tab>
 </abs>
