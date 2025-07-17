@@ -88,10 +88,10 @@ key, value
 ## XML
 
 ## ogscript.parseXML
-xml
+xml - uses com.sun.org.apache.xml.internal.dtm
 
 ## ogscript.runXPath
-xpath, xml
+xpath, xml - uses com.sun.org.apache.xml.internal.dtm
 
 # params functions
 

@@ -1,29 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<abs contexttype="opengear" id="_top" keepalive="false">
+<?xml version="1.0" encoding="UTF-8"?><abs contexttype="opengear" gpiport="7788" httptriggerport="" id="_top" keepalive="false">
+   <table bottom="0" fill="both" left="10" right="10" top="10" touch="true">
+      <tr>
 
-    <table top="10" left="10" right="10" bottom="0" fill="both" touch="true">
-        <tr>
-            <meta>
-                <lookup id="size">
-                    <entry key="tab-height">75</entry>
-                    <entry key="tab-width">150</entry>
-                    <entry key="field-height">50</entry>
-                </lookup>
-                <api src="e2.grid.js"/>
-                <api src="e2-views.grid.js" />
-                <constraint id="menuList" constrainttype="INT_CHOICE">
-                    <constraint key="0">Setup</constraint>
-                    <constraint key="1">Multiviewer</constraint>
-                    <constraint key="2">Presets</constraint>
-                    <constraint key="3">About</constraint>
-                </constraint>
+         <meta>
 
-                <params>
-                    <param access="1" name="E2IpAddress" oid="e2.ip" type="STRING" value="10.45.1.105" widget="text"/>
-                    <param access="1" value="0" constraint="menuList" constrainttype="ID_REFERENCE" name="Menu" oid="e2.menu" precision="0" type="INT32" widget="22"/>
-                </params>
-
-                <ogscript handles="onchange,onload" oid="e2.menu"><![CDATA[
+            <lookup id="size">
+               <entry key="tab-height">75</entry>
+               <entry key="tab-width">150</entry>
+               <entry key="field-height">50</entry>
+            </lookup>
+            <api src="e2.grid.js"/>
+            <api src="e2-views.grid.js"/>
+            <constraint constrainttype="INT_CHOICE" id="menuList">
+               <constraint key="0">Setup</constraint>
+               <constraint key="1">Multiviewer</constraint>
+               <constraint key="2">Presets</constraint>
+               <constraint key="3">About</constraint>
+               <constraint key="4">GPI In</constraint>
+            </constraint>
+            <params>
+               <param access="1" name="E2IpAddress" oid="e2.ip" type="STRING" value="127.0.0.1" widget="text"/>
+               <param access="1" constraint="menuList" constrainttype="ID_REFERENCE" name="Menu" oid="e2.menu" precision="0" type="INT32" value="0" widget="22"/>
+            </params>
+            <ogscript handles="onchange,onload" oid="e2.menu"><![CDATA[
                     menuIndex = params.getValue("e2.menu", 0);
                     ogscript.reveal('e2-tab-' + menuIndex);
                     switch (menuIndex) {
@@ -35,8 +34,7 @@
                             break;
                     }
                 ]]></ogscript>
-
-                <ogscript handles="oncontextmenu" targetid="menu-selector"><![CDATA[
+            <ogscript handles="oncontextmenu" targetid="menu-selector"><![CDATA[
                     return {
                         "Reload": function () {
                             generateMultiviewerTab();
@@ -44,45 +42,76 @@
                         }
                     };
                 ]]></ogscript>
+         </meta>
+      </tr>
+      <tr>
+         <tab bottom="10" fill="both" id="tabs" left="10" right="10" tabposition="none" top="10" weightx="1.0" weighty="1.0">
+            <!-- E2 Setup Tab -->
+            <abs id="e2-tab-0">
+                <simplegrid bottom="0" fill="horizontal" left="0" right="0" rows="2" top="0">
+                    <!-- E2 IP Address/Host -->
+                    <abs fill="horizontal">
+                        <label height="%const['size']['field-height']%" left="10" name="E2 IP:" style="txt-align:west;" top="10" width="200"/>
+                        <param expand="true" height="%const['size']['field-height']%" left="210" oid="e2.ip" right="10" top="10"/>
+                    </abs>
+                    <abs fill="horizontal">
+                        <!-- TODO Listen to e2:ip parameter change and update connecthost -->
+                        <listener name="E2 Link" buttontype="toggle" autostart="false" connecthost="127.0.0.1" connectport="9876" delimiter="&lt;/System&gt;" delimitertype="string">
+                            <task tasktype="ogscript"><![CDATA[
+                                if(event.isMessageEvent()) {
+                                    var result = event.getBytesAsString().trim();
+                                    var document = ogscript.parseXML(result + "</System>");
+                                    // Example - Get Native Rate
+                                    var nativeRate = ogscript.runXPath('/System/NativeRate', document);
+                                    ogscript.debug("Native Rate: " + nativeRate.item(0).getTextContent());
+                                } else if(event.isConnectEvent()){
+                                    this.writeString('<System id="0"><XMLType>3</XMLType><Query>3</Query><Recursive>1</Recursive></System>', false);
+                                } else if(event.isDisconnectEvent()) {
+                                    ogscript.debug("Disconnected from E2");
+                                }
+                            ]]></task>
+                        </listener>
+                  </abs>
+                </simplegrid>
+            </abs>
+            <!-- E2 Multiviewer Tab -->
+            <abs id="e2-tab-1"/>
+            <!-- E2 Presets Tab -->
+            <abs id="e2-tab-2"/>
+            <!-- E2 About Tab -->
+            <abs id="e2-tab-3">
+               <label bottom="10" left="10" name="Kye Lewis - kye.lewis@woohah.com.au" right="10" style="txt-align:center" top="10"/>
+            </abs>
+            <!-- GPI Trigger Testing Tab -->
+            <abs id="e2-tab-4">
+               <simplegrid bottom="0" fill="horizontal" left="0" right="0" rows="2" top="0">
+                  <button bottom="10" gpi="test1" id="test1" left="10" name="Test1" right="10" style="txt-align:center;bg#red" top="10">
+                     <task><![CDATA[
+                     color = "green";
+                     if( event.getState && event.getState()) {
+                        color = event.getState();
+                     }
+                                ogscript.setStyle("test1", "bg#" + color);
+                            ]]></task>
+                  </button>
+                  <button bottom="10" left="10" name="Reset" right="10" style="txt-align:center;" top="10">
+                     <task><![CDATA[
+                                ogscript.setStyle("test1", "bg#red");
+                            ]]></task>
+                  </button>
 
-            </meta>
-        </tr>
 
-        <tr>
-            <tab tabposition="none" fill="both" weighty="1.0" weightx="1.0" id="tabs" bottom="10" left="10" right="10" top="10">
-
-                <!-- E2 Setup Tab -->
-                <abs id="e2-tab-0" >
-                    <simplegrid rows="2" fill="horizontal" top="0" left="0" right="0" bottom="0">
-                        <!-- E2 IP Address/Host -->
-                        <abs fill="horizontal">
-                            <label height="%const['size']['field-height']%" left="10" top="10" width="200" name="E2 IP:" style="txt-align:west;"/>
-                            <param height="%const['size']['field-height']%" left="210" top="10" right="10" expand="true"  oid="e2.ip" />
-                        </abs>
-                    </simplegrid>
-
-                </abs>
-
-                <!-- E2 Multiviewer Tab -->
-                <abs id="e2-tab-1" ></abs>
-
-                <!-- E2 Presets Tab -->
-                <abs id="e2-tab-2" ></abs>
-
-                <!-- E2 About Tab -->
-                <abs id="e2-tab-3">
-                    <label top="10" left="10" bottom="10" right="10" style="txt-align:center" name="Kye Lewis - kye.lewis@woohah.com.au"/>
-                </abs>
-            </tab>
-
-        </tr>
-        <tr height="100">
-            <table fill="horizontal">
-                <tr>
-                    <param id="menu-selector" expand="true" width="%const['size']['tab-width']%" height="%const['size']['tab-height']%" oid="e2.menu"/>
-                    <blank fill="horizontal" weightx="1.0"/>
-                </tr>
-            </table>
-        </tr>
+               </simplegrid>
+            </abs>
+         </tab>
+      </tr>
+      <tr height="100">
+         <table fill="horizontal">
+            <tr>
+               <param expand="true" height="%const['size']['tab-height']%" id="menu-selector" oid="e2.menu" width="%const['size']['tab-width']%"/>
+               <blank fill="horizontal" weightx="1.0"/>
+            </tr>
+         </table>
+      </tr>
    </table>
 </abs>

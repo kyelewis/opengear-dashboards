@@ -41,10 +41,10 @@ function generateMultiviewerTab() {
       layouts[i].Name +
       '" width="100" fill="both" buttontype="push">';
     content += "<task>";
+    content += 'const ip = params.getValue("e2.ip", 0); ';
+    content += 'const frame_address = params.getValue("e2.frame_address", 0);';
     content +=
-      'const ip =  params.getValue("e2.ip", 0); E2(ip).recallMultiviewLayout(' +
-      layouts[i].id +
-      ");";
+      "E2(ip).recallMultiviewLayout(" + layouts[i].id + ", frame_address);";
     content += "</task>";
     content += "</button>";
   }
