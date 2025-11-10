@@ -12,14 +12,17 @@
             <api src="e2.grid.js"/>
             <api src="e2-views.grid.js"/>
             <constraint constrainttype="INT_CHOICE" id="menuList">
-               <constraint key="0">Setup</constraint>
-               <constraint key="1">Multiviewer</constraint>
-               <constraint key="2">Presets</constraint>
-               <constraint key="3">About</constraint>
-               <constraint key="4">GPI In</constraint>
+                <constraint key="0">Setup</constraint>
+                <constraint key="1">Multiviewer</constraint>
+                <constraint key="2">Presets</constraint>
+                <constraint key="3">Cards</constraint>
+                <constraint key="4">Inputs</constraint>
+                <constraint key="5">Destinations</constraint>
+                <constraint key="6">Stills</constraint>
+                <constraint key="7">About</constraint>
             </constraint>
             <params>
-               <param access="1" name="E2IpAddress" oid="e2.ip" type="STRING" value="127.0.0.1" widget="text"/>
+               <param access="1" name="E2IpAddress" oid="e2.ip" type="STRING" value="192.168.0.175" widget="text"/>
                <param access="1" constraint="menuList" constrainttype="ID_REFERENCE" name="Menu" oid="e2.menu" precision="0" type="INT32" value="0" widget="22"/>
             </params>
             <ogscript handles="onchange,onload" oid="e2.menu"><![CDATA[
@@ -32,15 +35,19 @@
                         case 2:
                             generatePresetsTab();
                             break;
+                        case 3:
+                            generateCardsTab();
+                            break;
+                        case 4:
+                            generateInputsTab();
+                            break;
+                        case 5:
+                            generateDestinationsTab();
+                            break;
+                        case 6:
+                            generateStillsTab();
+                            break;
                     }
-                ]]></ogscript>
-            <ogscript handles="oncontextmenu" targetid="menu-selector"><![CDATA[
-                    return {
-                        "Reload": function () {
-                            generateMultiviewerTab();
-                            generatePresetsTab();
-                        }
-                    };
                 ]]></ogscript>
          </meta>
       </tr>
@@ -48,22 +55,93 @@
          <tab bottom="10" fill="both" id="tabs" left="10" right="10" tabposition="none" top="10" weightx="1.0" weighty="1.0">
             <!-- E2 Setup Tab -->
             <abs id="e2-tab-0">
-                <simplegrid bottom="0" fill="horizontal" left="0" right="0" rows="2" top="0">
+                <simplegrid bottom="0" fill="horizontal" left="0" right="0" rows="3" top="0">
                     <!-- E2 IP Address/Host -->
                     <abs fill="horizontal">
-                        <label height="%const['size']['field-height']%" left="10" name="E2 IP:" style="txt-align:west;" top="10" width="200"/>
-                        <param expand="true" height="%const['size']['field-height']%" left="210" oid="e2.ip" right="10" top="10"/>
+                        <label height="%const['size']['field-height']%" left="10" name="E2 IP:" style="txt-align:west;" top="0" width="200"/>
+                        <param expand="true" height="%const['size']['field-height']%" left="210" oid="e2.ip" right="10" top="0"/>
                     </abs>
+
+
+
                     <abs fill="horizontal">
+
                         <!-- TODO Listen to e2:ip parameter change and update connecthost -->
-                        <listener name="E2 Link" buttontype="toggle" autostart="false" connecthost="127.0.0.1" connectport="9876" delimiter="&lt;/System&gt;" delimitertype="string">
+                        <listener name="Enable Feedback" buttontype="toggle" autostart="false" connecthost="192.168.0.175" connectport="9876" delimiter="&lt;/System&gt;" delimitertype="string">
                             <task tasktype="ogscript"><![CDATA[
+
+                                function getTextValue(path, document) {
+                                    return ogscript.runXPath(path, document).item(0).getTextContent();
+                                }
+
+                                function getFrames(document) {
+
+                                    const frames = ogscript.runXPath(
+                                        "/System/FrameCollection/Frame",
+                                        document
+                                    );
+
+                                    const result = [];
+
+
+                                    for(i = 0; i < frames.length; i++) {
+
+                                        var frame = frames.item(i);
+                                        var id = ogscript
+                                            .runXPath("./@id", frame).item(0).getTextContent();
+
+                                        var type = ogscript
+                                            .runXPath("FrameType", frame).item(0).getTextContent();
+
+                                        var name = ogscript
+                                            .runXPath("Name", frame).item(0).getTextContent();
+
+                                        result.push({
+                                            id: id,
+                                            type: type,
+                                            name: name
+                                        });
+                                    }
+
+                                    return result;
+                                }
+
+                                function frameSummary(frame) {
+                                    return frame.id + " named \"" + frame.name + "\", type " + frame.type;
+                                }
+
                                 if(event.isMessageEvent()) {
+
                                     var result = event.getBytesAsString().trim();
-                                    var document = ogscript.parseXML(result + "</System>");
-                                    // Example - Get Native Rate
-                                    var nativeRate = ogscript.runXPath('/System/NativeRate', document);
-                                    ogscript.debug("Native Rate: " + nativeRate.item(0).getTextContent());
+                                    var fullMessage = result + "</System>";  // @todo this is a bug workaround in dashboard
+
+                                    ogscript.debug("XML Feedback: " + fullMessage);
+                                    ogscript.rename("last_feedback", fullMessage);
+
+                                    var document = ogscript.parseXML(fullMessage);
+
+                                    // Native Rate
+                                    var nativeRateValue = getTextValue("/System/NativeRate", document);
+                                    ogscript.debug("Native Rate: " + nativeRateValue);
+                                    ogscript.rename("native_rate", nativeRateValue);
+
+                                    // Version
+                                    var versionValue = getTextValue("/System/Version", document);
+                                    ogscript.debug("Version: " + versionValue);
+                                    ogscript.rename("version", versionValue);
+
+                                    // Name
+                                    var nameValue = getTextValue("/System/Name", document);
+                                    ogscript.debug("Name: " + nameValue);
+                                    ogscript.rename("name", nameValue);
+
+                                    // Frame 1
+                                    var frameValue = frameSummary(getFrames(document)[0]);
+                                    ogscript.debug("Frame 1: " + frameValue);
+                                    ogscript.rename("frame_1", frameValue);
+
+
+
                                 } else if(event.isConnectEvent()){
                                     this.writeString('<System id="0"><XMLType>3</XMLType><Query>3</Query><Recursive>1</Recursive></System>', false);
                                 } else if(event.isDisconnectEvent()) {
@@ -71,38 +149,56 @@
                                 }
                             ]]></task>
                         </listener>
-                  </abs>
+
+                        <label top="50" left="10" height="%const['size']['field-height']%" name="Last Seen Incoming Message:" />
+                        <label top="100" height="%const['size']['field-height']%" left="10" name="(no message)" id="last_feedback" />
+
+                    </abs>
+
+                    <abs fill="horizontal">
+                        <!-- Native Rate -->
+                        <label height="%const['size']['field-height']%" left="10" name="Native Rate:" style="txt-align:west;" top="0" width="200"/>
+                        <label height="%const['size']['field-height']%" left="210" id="native_rate" right="10" top="0"/>
+
+                        <!-- Version -->
+                        <label height="%const['size']['field-height']%" left="10" name="Version:" style="txt-align:west;" top="50" width="200"/>
+                        <label height="%const['size']['field-height']%" left="210" id="version" right="10" top="50"/>
+
+                        <!-- System Name -->
+                        <label height="%const['size']['field-height']%" left="10" name="Name:" style="txt-align:west;" top="100" width="200"/>
+                        <label height="%const['size']['field-height']%" left="210" id="name" right="10" top="100"/>
+
+                        <!-- Frame 1 Info -->
+                        <label height="%const['size']['field-height']%" left="10" name="Frame 1:" style="txt-align:west;" top="150" width="200"/>
+                        <label height="%const['size']['field-height']%" left="210" id="frame_1" right="10" top="150"/>
+
+                    </abs>
+
                 </simplegrid>
             </abs>
             <!-- E2 Multiviewer Tab -->
             <abs id="e2-tab-1"/>
+
             <!-- E2 Presets Tab -->
             <abs id="e2-tab-2"/>
+
+            <!-- E2 Cards Tab -->
+            <abs id="e2-tab-3"/>
+
+          <!-- E2 Inputs Tab -->
+            <abs id="e2-tab-4"/>
+
+            <!-- E2 Destinations Tab -->
+            <abs id="e2-tab-5"/>
+
+            <!-- E2 Stills Tab -->
+            <abs id="e2-tab-6"/>
+
             <!-- E2 About Tab -->
-            <abs id="e2-tab-3">
-               <label bottom="10" left="10" name="Kye Lewis - kye.lewis@woohah.com.au" right="10" style="txt-align:center" top="10"/>
+            <abs id="e2-tab-7">
+               <label bottom="10" left="10" name="Kye Lewis - kye@modernmachine.com.au" right="10" style="txt-align:center" top="10"/>
             </abs>
-            <!-- GPI Trigger Testing Tab -->
-            <abs id="e2-tab-4">
-               <simplegrid bottom="0" fill="horizontal" left="0" right="0" rows="2" top="0">
-                  <button bottom="10" gpi="test1" id="test1" left="10" name="Test1" right="10" style="txt-align:center;bg#red" top="10">
-                     <task><![CDATA[
-                     color = "green";
-                     if( event.getState && event.getState()) {
-                        color = event.getState();
-                     }
-                                ogscript.setStyle("test1", "bg#" + color);
-                            ]]></task>
-                  </button>
-                  <button bottom="10" left="10" name="Reset" right="10" style="txt-align:center;" top="10">
-                     <task><![CDATA[
-                                ogscript.setStyle("test1", "bg#red");
-                            ]]></task>
-                  </button>
 
-
-               </simplegrid>
-            </abs>
          </tab>
       </tr>
       <tr height="100">

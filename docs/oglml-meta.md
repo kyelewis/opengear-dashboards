@@ -1,7 +1,9 @@
 # api
+
 Location for global ogScript code- global should generally be placed with a meta tag, UI manipulation code should be top-level.
 
 # meta
+
 Convenient parent tag for non-ui tags.
 
 # widgets & widgetdescriptor
@@ -51,7 +53,7 @@ Constants to be substituted inside of tag attributes.
 
 ```xml
 <ogscript handles="onload">%const['MyLookup']['Thing']%</ogscript>
-````
+```
 
 # style
 
@@ -70,6 +72,7 @@ Constants to be substituted inside of tag attributes.
 # ogscript
 
 ## Parameter Change
+
 ```xml
 <ogscript handles="onchange" oid="oid.*">
 ...
@@ -77,6 +80,7 @@ Constants to be substituted inside of tag attributes.
 ```
 
 ## Tab Change
+
 ```xml
 <ogscript handles="onchange" targetid="target-id" element="1">
 ...
@@ -84,6 +88,7 @@ Constants to be substituted inside of tag attributes.
 ```
 
 ## Context Menu
+
 ```xml
 <ogscript handles="oncontextmenu" targetid="some-id">
   contextMenu = { "One": function() {
@@ -117,7 +122,8 @@ Constants to be substituted inside of tag attributes.
 
 # task
 
- Task to be run with an event happens in the system:
- - Label tags, button tags, listener tags
+Task to be run with an event happens in the system:
+
+- Label tags, button tags, listener tags
 
 # include
